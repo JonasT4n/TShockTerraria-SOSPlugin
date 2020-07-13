@@ -5,3 +5,6 @@ A Friendy Terraria Server Plugin. Works both in Server-Side-Character and non-SS
 
 #### Requirements
 - TShock. link: [here](https://github.com/Pryaxis/TShock/releases)
+
+# Notes
+Do **NOT** edit sosplugin.json in "./ServerFolder/tshock/sosplugin.json".
