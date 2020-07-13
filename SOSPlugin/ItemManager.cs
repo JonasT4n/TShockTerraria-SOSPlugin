@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using Terraria;
-using Terraria.ID;
 using TShockAPI;
 
 namespace SOSPlugin
@@ -32,7 +32,7 @@ namespace SOSPlugin
         public static Item GetTerrariaItemByID(int id)
         {
             Item item = TShock.Utils.GetItemById(id);
-            item.SetDefaults();
+            item.SetDefaults(id);
             return item;
         }
     }

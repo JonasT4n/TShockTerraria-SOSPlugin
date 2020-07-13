@@ -33,7 +33,7 @@ namespace SOSPlugin
         public override void Initialize()
         {
             // Commands
-            Commands.ChatCommands.Add(new Command("tshock.whisper", SaveMoney, "savemoney"));
+            //Commands.ChatCommands.Add(new Command("tshock.whisper", SaveMoney, "savemoney"));
             Commands.ChatCommands.Add(new Command("tshock.whisper", InfoLastDeath, "lastdeadinfo"));
             Commands.ChatCommands.Add(new Command("tshock.whisper", TeleportLastDeath, "lastdeadport"));
 
@@ -42,18 +42,29 @@ namespace SOSPlugin
             ServerApi.Hooks.NetGreetPlayer.Register(this, OnPlayerWorldConnect);
             ServerApi.Hooks.NetGetData.Register(this, OnServerDataEvent);
         }
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                lastPlaceOfDeathData.SaveProgress();
+                ServerApi.Hooks.NetGetData.Deregister(this, OnServerDataEvent);
+                ServerApi.Hooks.NetGreetPlayer.Deregister(this, OnPlayerWorldConnect);
+                GetDataHandlers.ItemDrop -= OnDroppedEvent;
+            }
+            base.Dispose(disposing);
+        }
 
         #region Command Functions
- 
-        private void SaveMoney(CommandArgs arg)
-        {
-            TSPlayer player = arg.Player;
-            lastPlaceOfDeathData.UpdateSaveMoneyUser(player.UUID);
-            if (lastPlaceOfDeathData.GetUserSavedMoney(player.UUID))
-                player.SendMessage("Save Money Mode has been Enabled", Color.GreenYellow);
-            else
-                player.SendMessage("Save Money Mode has been Disabled", Color.GreenYellow);
-        }
+
+        //private void SaveMoney(CommandArgs arg)
+        //{
+        //    TSPlayer player = arg.Player;
+        //    lastPlaceOfDeathData.UpdateSaveMoneyUser(player.UUID);
+        //    if (lastPlaceOfDeathData.GetUserSavedMoney(player.UUID))
+        //        player.SendMessage("Save Money Mode has been Enabled", Color.GreenYellow);
+        //    else
+        //        player.SendMessage("Save Money Mode has been Disabled", Color.GreenYellow);
+        //}
 
         private void InfoLastDeath(CommandArgs arg)
         {
@@ -89,7 +100,7 @@ namespace SOSPlugin
 
         #region Events
 
-        private void DeathEvent(TSPlayer player, MemoryStream data)
+        private void OnDeathEvent(TSPlayer player, MemoryStream data)
         {
             // Read in Byte
             data.ReadByte();
@@ -121,8 +132,8 @@ namespace SOSPlugin
                 if (arg.Type <= ItemID.PlatinumCoin && arg.Type >= ItemID.CopperCoin)
                 {
                     Item coin = ItemManager.GetTerrariaItemByID(arg.Type);
-                    coin.stack = arg.Stacks;
-                    player.SendMessage("You have dropped " + coin.stack + " " + coin.Name, Color.OrangeRed);
+                    coin.stack = arg.Stacks;         
+                    player.SendMessage("Dropped your Coin!", Color.OrangeRed);
                 }
             }
         }
@@ -136,7 +147,7 @@ namespace SOSPlugin
             {
                 // Death Event
                 case PacketTypes.PlayerDeathV2:
-                    DeathEvent(player, new MemoryStream(arg.Msg.readBuffer, arg.Index, arg.Length - 1));
+                    OnDeathEvent(player, new MemoryStream(arg.Msg.readBuffer, arg.Index, arg.Length - 1));
                     break;
 
                 default:
@@ -145,17 +156,5 @@ namespace SOSPlugin
         }
 
         #endregion
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                lastPlaceOfDeathData.SaveProgress();
-                ServerApi.Hooks.NetGetData.Deregister(this, OnServerDataEvent);
-                ServerApi.Hooks.NetGreetPlayer.Deregister(this, OnPlayerWorldConnect);
-                GetDataHandlers.ItemDrop -= OnDroppedEvent;
-            }
-            base.Dispose(disposing);
-        }
     }
 }
